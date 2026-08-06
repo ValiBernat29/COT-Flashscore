@@ -1,0 +1,244 @@
+{
+  "teams": [
+    {
+      "id": "3",
+      "name": "Green Eagles",
+      "played": 0,
+      "won": 0,
+      "drawn": 0,
+      "lost": 0,
+      "goalsFor": 0,
+      "goalsAgainst": 0,
+      "points": 0
+    },
+    {
+      "id": "4",
+      "name": "Yellow Lions",
+      "played": 0,
+      "won": 0,
+      "drawn": 0,
+      "lost": 0,
+      "goalsFor": 0,
+      "goalsAgainst": 0,
+      "points": 0
+    },
+    {
+      "name": "UTA Arad",
+      "played": 0,
+      "won": 0,
+      "drawn": 0,
+      "lost": 0,
+      "goalsFor": 0,
+      "goalsAgainst": 0,
+      "points": 0,
+      "id": "2iThjcqIMCI"
+    },
+    {
+      "name": "FCSB",
+      "played": 0,
+      "won": 0,
+      "drawn": 0,
+      "lost": 0,
+      "goalsFor": 0,
+      "goalsAgainst": 0,
+      "points": 0,
+      "id": "wJsRUeMzRvA"
+    },
+    {
+      "name": "FC Galati",
+      "played": 0,
+      "won": 0,
+      "drawn": 0,
+      "lost": 0,
+      "goalsFor": 0,
+      "goalsAgainst": 0,
+      "points": 0,
+      "id": "iz_plg6zUF8"
+    },
+    {
+      "name": "FC OPT",
+      "played": 0,
+      "won": 0,
+      "drawn": 0,
+      "lost": 0,
+      "goalsFor": 0,
+      "goalsAgainst": 0,
+      "points": 0,
+      "id": "SJTHoM0jk7Q"
+    }
+  ],
+  "fixtures": [
+    {
+      "matchday": 3,
+      "homeTeamId": "SJTHoM0jk7Q",
+      "awayTeamId": "wJsRUeMzRvA",
+      "homeScore": 4,
+      "awayScore": 1,
+      "status": "Finished",
+      "events": [
+        {
+          "type": "Goal",
+          "teamId": "SJTHoM0jk7Q",
+          "minute": 47
+        },
+        {
+          "type": "Goal",
+          "teamId": "SJTHoM0jk7Q",
+          "minute": 48
+        },
+        {
+          "type": "Goal",
+          "teamId": "wJsRUeMzRvA",
+          "minute": 51
+        },
+        {
+          "type": "Goal",
+          "teamId": "SJTHoM0jk7Q",
+          "minute": 76
+        },
+        {
+          "type": "Goal",
+          "teamId": "SJTHoM0jk7Q",
+          "minute": 89
+        }
+      ],
+      "id": "BHq-PKVK3eM"
+    },
+    {
+      "matchday": 1,
+      "homeTeamId": "wJsRUeMzRvA",
+      "awayTeamId": "2iThjcqIMCI",
+      "homeScore": 1,
+      "awayScore": 3,
+      "status": "Finished",
+      "events": [
+        {
+          "type": "Goal",
+          "teamId": "wJsRUeMzRvA",
+          "minute": 16
+        },
+        {
+          "type": "Goal",
+          "teamId": "2iThjcqIMCI",
+          "minute": 57
+        },
+        {
+          "type": "Goal",
+          "teamId": "2iThjcqIMCI",
+          "minute": 84
+        },
+        {
+          "type": "Goal",
+          "teamId": "2iThjcqIMCI",
+          "minute": 89
+        }
+      ],
+      "id": "ZASO66exl_Y"
+    },
+    {
+      "matchday": 1,
+      "homeTeamId": "SJTHoM0jk7Q",
+      "awayTeamId": "3",
+      "homeScore": 2,
+      "awayScore": 0,
+      "status": "Finished",
+      "events": [
+        {
+          "type": "Goal",
+          "teamId": "SJTHoM0jk7Q",
+          "minute": 3
+        },
+        {
+          "type": "Goal",
+          "teamId": "SJTHoM0jk7Q",
+          "minute": 4
+        }
+      ],
+      "id": "8CAVV1moUAE"
+    },
+    {
+      "matchday": 1,
+      "homeTeamId": "iz_plg6zUF8",
+      "awayTeamId": "4",
+      "homeScore": 1,
+      "awayScore": 1,
+      "status": "Finished",
+      "events": [
+        {
+          "type": "Goal",
+          "teamId": "iz_plg6zUF8",
+          "minute": 22
+        },
+        {
+          "type": "Goal",
+          "teamId": "4",
+          "minute": 89
+        }
+      ],
+      "id": "cWhaLyaqfNY"
+    },
+    {
+      "matchday": 2,
+      "homeTeamId": "wJsRUeMzRvA",
+      "awayTeamId": "3",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "Finished",
+      "events": [],
+      "id": "OEfIxleVtq4"
+    },
+    {
+      "matchday": 2,
+      "homeTeamId": "iz_plg6zUF8",
+      "awayTeamId": "SJTHoM0jk7Q",
+      "homeScore": 1,
+      "awayScore": 2,
+      "status": "Finished",
+      "events": [
+        {
+          "type": "Goal",
+          "teamId": "iz_plg6zUF8",
+          "minute": 37
+        },
+        {
+          "type": "Goal",
+          "teamId": "SJTHoM0jk7Q",
+          "minute": 58
+        },
+        {
+          "type": "Goal",
+          "teamId": "SJTHoM0jk7Q",
+          "minute": 61
+        }
+      ],
+      "id": "JKCpIDXZRM8"
+    },
+    {
+      "matchday": 1,
+      "homeTeamId": "2iThjcqIMCI",
+      "awayTeamId": "3",
+      "homeScore": 2,
+      "awayScore": 1,
+      "status": "Finished",
+      "events": [
+        {
+          "type": "Goal",
+          "teamId": "2iThjcqIMCI",
+          "minute": 20
+        },
+        {
+          "type": "Goal",
+          "teamId": "2iThjcqIMCI",
+          "minute": 21
+        },
+        {
+          "type": "Goal",
+          "teamId": "3",
+          "minute": 54
+        }
+      ],
+      "id": "YhmL4JRrEZc"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
