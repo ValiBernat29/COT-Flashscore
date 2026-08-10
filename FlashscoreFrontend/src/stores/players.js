@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
 
 const API_URL = 'http://localhost:5198/api/players'
+
 
 export const usePlayerStore = defineStore('players', () => {
   const players = ref([])

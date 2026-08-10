@@ -7,8 +7,9 @@ const router = createRouter({
       path: '/',
       component: () => import('../layouts/PublicLayout.vue'),
       children: [
-        { path: '', name: 'standings', component: () => import('../views/StandingsView.vue') }, // Live league table
-        { path: 'matches', name: 'matches', component: () => import('../views/MatchdayView.vue') }, // Matchday schedule & events
+        { path: '', name: 'standings', component: () => import('../views/StandingsView.vue') },
+        { path: 'matches', name: 'matches', component: () => import('../views/MatchdayView.vue') },
+        { path: 'matches/:id', name: 'match-detail', component: () => import('../views/MatchDetailView.vue') },
       ],
     },
     {

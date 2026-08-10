@@ -12,15 +12,17 @@ export const useLiveMatchStore = defineStore('liveMatch', () => {
   let timer = null
   let htTimeout = null
 
-  const startMatch = async (matchId) => {
-    if (activeMatchId.value === matchId) return
-
+  const startMatch = async (matchId, lineup = {}) => {
     const fixtureStore = useFixtureStore()
+    const match = fixtureStore.getMatchById(matchId)
+
+    // Only bail out if the match is already running live (not just pre-selected)
+    if (match && match.status === MATCH_STATUS.LIVE && activeMatchId.value === matchId) return
+
     if (timer) clearInterval(timer)
     if (htTimeout) clearTimeout(htTimeout)
 
     activeMatchId.value = matchId
-    const match = fixtureStore.getMatchById(matchId)
 
     events.value = match.events || []
 
@@ -28,12 +30,16 @@ export const useLiveMatchStore = defineStore('liveMatch', () => {
       currentMinute.value = 0
       matchPhase.value = MATCH_PHASES.FIRST_HALF
 
+      // Strip navigation properties before sending to backend to avoid EF Core conflicts
+      const { homeTeam, awayTeam, ...matchData } = match
       await fixtureStore.updateFixture(matchId, {
-        ...match,
+        ...matchData,
         status: MATCH_STATUS.LIVE,
         homeScore: 0,
         awayScore: 0,
         events: [],
+        ...(lineup.homeLineup !== undefined && { homeLineup: lineup.homeLineup }),
+        ...(lineup.awayLineup !== undefined && { awayLineup: lineup.awayLineup }),
       })
     } else {
       if (events.value.length > 0) {
@@ -77,8 +83,9 @@ export const useLiveMatchStore = defineStore('liveMatch', () => {
     if (activeMatchId.value) {
       const match = fixtureStore.getMatchById(activeMatchId.value)
       if (match) {
+        const { homeTeam, awayTeam, ...matchData } = match
         await fixtureStore.updateFixture(activeMatchId.value, {
-          ...match,
+          ...matchData,
           status: MATCH_STATUS.FINISHED,
           events: events.value,
         })
@@ -98,8 +105,9 @@ export const useLiveMatchStore = defineStore('liveMatch', () => {
     if (activeMatchId.value) {
       const match = fixtureStore.getMatchById(activeMatchId.value)
       if (match) {
+        const { homeTeam, awayTeam, ...matchData } = match
         await fixtureStore.updateFixture(activeMatchId.value, {
-          ...match,
+          ...matchData,
           status: MATCH_STATUS.SCHEDULED,
           homeScore: 0,
           awayScore: 0,

@@ -23,16 +23,15 @@ const handleStartMatch = async (matchId) => {
     alert('You must conclude or cancel the current running match first.')
     return
   }
-  await liveMatchStore.startMatch(matchId)
+  liveMatchStore.activeMatchId = matchId
   emit('view-live')
 }
 
 const handleResumeMatch = async (matchId) => {
-  if (liveMatchStore.activeMatchId && liveMatchStore.activeMatchId !== matchId) {
-    alert('Another match is currently loaded. Cancel it first.')
+  if (liveMatchStore.activeMatchId && String(liveMatchStore.activeMatchId) !== String(matchId)) {    alert('Another match is currently loaded. Cancel it first.')
     return
   }
-  await liveMatchStore.startMatch(matchId)
+  liveMatchStore.activeMatchId = matchId
   emit('view-live')
 }
 </script>

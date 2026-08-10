@@ -11,6 +11,7 @@ import LiveMatchBoard from '../components/admin/LiveMatchBoard.vue'
 const isTeamModalOpen = ref(false)
 const isFixtureModalOpen = ref(false)
 const isViewingMatch = ref(false)
+
 </script>
 
 <template>

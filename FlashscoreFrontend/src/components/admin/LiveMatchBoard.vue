@@ -1,21 +1,56 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useTeamStore } from '../../stores/teams'
 import { useFixtureStore } from '../../stores/fixtures'
 import { useLiveMatchStore } from '../../stores/liveMatch'
+import { MATCH_STATUS } from '../../utils/constants' 
+import { usePlayerStore } from '../../stores/players' 
 
 const emit = defineEmits(['close'])
 const teamStore = useTeamStore()
 const fixtureStore = useFixtureStore()
 const liveMatchStore = useLiveMatchStore()
+const playerStore = usePlayerStore()
 
-const getTeamName = (id) =>
-  teamStore.teams.find((t) => String(t.id) === String(id))?.name || 'Deleted Team'
+const selectedHomeLineup = ref([])
+const selectedAwayLineup = ref([])
 
 const activeMatch = computed(() => {
   if (!liveMatchStore.activeMatchId) return null
-  return fixtureStore.getMatchById(liveMatchStore.activeMatchId)
+    return fixtureStore.getMatchById(Number(liveMatchStore.activeMatchId)) 
+      || fixtureStore.getMatchById(String(liveMatchStore.activeMatchId))
 })
+
+const homeTeamRoster = ref([])
+const awayTeamRoster = ref([])
+
+onMounted(async () => {
+  if (!activeMatch.value) return
+
+  try {
+    const homeRes = await fetch(`http://localhost:5198/api/players/team/${activeMatch.value.homeTeamId}`)
+    homeTeamRoster.value = await homeRes.json()
+
+    const awayRes = await fetch(`http://localhost:5198/api/players/team/${activeMatch.value.awayTeamId}`)
+    awayTeamRoster.value = await awayRes.json()
+  } catch (error) {
+    console.error('Failed to load match rosters:', error)
+  }
+})
+
+const isLineupReady = computed(() => {
+  return selectedHomeLineup.value.length === 11 && selectedAwayLineup.value.length === 11
+})
+
+const startMatch = async () => {
+  await liveMatchStore.startMatch(activeMatch.value.id, {
+    homeLineup: selectedHomeLineup.value,
+    awayLineup: selectedAwayLineup.value,
+  })
+}
+
+const getTeamName = (id) =>
+  teamStore.teams.find((t) => String(t.id) === String(id))?.name || 'Deleted Team'
 
 const handleCancelMatch = async () => {
   if (confirm('Are you sure you want to cancel? This resets the match to 0-0 and wipes events.')) {
@@ -42,8 +77,9 @@ const registerGoal = async (teamId) => {
     activeMatch.value.awayScore += 1
   }
 
+  const { homeTeam, awayTeam, ...matchData } = activeMatch.value
   await fixtureStore.updateFixture(activeMatch.value.id, {
-    ...activeMatch.value,
+    ...matchData,
     homeScore: activeMatch.value.homeScore,
     awayScore: activeMatch.value.awayScore,
     events: liveMatchStore.events,
@@ -53,6 +89,8 @@ const registerGoal = async (teamId) => {
 
 <template>
   <div v-if="activeMatch" class="space-y-6">
+    
+    <!-- TOP BAR (Always visible) -->
     <div class="flex justify-between items-center pb-2 border-b border-slate-700">
       <button
         @click="handleBack"
@@ -64,92 +102,142 @@ const registerGoal = async (teamId) => {
         {{
           liveMatchStore.matchPhase === 'FT'
             ? 'Match has concluded'
+            : activeMatch.status === MATCH_STATUS.SCHEDULED 
+            ? 'Pre-match setup' 
             : 'Match continues running in the background'
         }}
       </span>
     </div>
 
-    <div
-      class="flex justify-between items-center bg-slate-900 p-8 rounded-lg border border-slate-700 relative overflow-hidden"
-    >
-      <div
-        class="absolute top-0 left-1/2 -translate-x-1/2 bg-slate-800 px-6 py-2 rounded-b-lg border-b border-x border-slate-700 shadow-md flex items-center gap-3"
-      >
-        <span
-          v-if="liveMatchStore.matchPhase === 'HT'"
-          class="text-amber-400 font-black tracking-widest uppercase"
-          >Half Time</span
-        >
-        <span
-          v-else-if="liveMatchStore.matchPhase === 'FT'"
-          class="text-slate-400 font-black tracking-widest uppercase"
-          >Full Time</span
-        >
-        <span v-else class="text-emerald-400 font-bold text-xl animate-pulse"
-          >{{ liveMatchStore.currentMinute }}'</span
-        >
+    <!-- PRE-MATCH LINEUP BUILDER -->
+    <div v-if="activeMatch.status === MATCH_STATUS.SCHEDULED" class="bg-slate-800 p-6 rounded-lg mt-6">
+      <h2 class="text-2xl font-bold text-white mb-4">Set Starting Lineups</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Home Team Selection -->
+        <div>
+          <h3 class="text-xl text-blue-400 font-bold mb-3">{{ getTeamName(activeMatch.homeTeamId) }} ({{ selectedHomeLineup.length }}/11)</h3>
+          <div class="space-y-2 max-h-96 overflow-y-auto pr-2">
+            <label 
+              v-for="player in homeTeamRoster" 
+              :key="player.id"
+              class="flex items-center gap-3 p-2 rounded hover:bg-slate-700 cursor-pointer transition border border-slate-700"
+              :class="{'bg-blue-900/30 border-blue-500': selectedHomeLineup.includes(player.id)}"
+            >
+              <input type="checkbox" :value="player.id" v-model="selectedHomeLineup" class="w-5 h-5 accent-blue-500">
+              <span class="font-mono text-slate-400 w-6">#{{ player.number }}</span>
+              <span class="font-bold text-white">{{ player.name }}</span>
+              <span class="text-xs bg-slate-600 px-2 py-1 rounded ml-auto text-slate-300">{{ player.position }}</span>
+            </label>
+            <div v-if="homeTeamRoster.length === 0" class="text-slate-500 italic p-4 text-center border border-dashed border-slate-700 rounded">
+              No players found for this team. Add players in the Teams menu first!
+            </div>
+          </div>
+        </div>
+
+        <!-- Away Team Selection -->
+        <div>
+          <h3 class="text-xl text-red-400 font-bold mb-3">{{ getTeamName(activeMatch.awayTeamId) }} ({{ selectedAwayLineup.length }}/11)</h3>
+          <div class="space-y-2 max-h-96 overflow-y-auto pr-2">
+            <label 
+              v-for="player in awayTeamRoster" 
+              :key="player.id"
+              class="flex items-center gap-3 p-2 rounded hover:bg-slate-700 cursor-pointer transition border border-slate-700"
+              :class="{'bg-red-900/30 border-red-500': selectedAwayLineup.includes(player.id)}"
+            >
+              <input type="checkbox" :value="player.id" v-model="selectedAwayLineup" class="w-5 h-5 accent-red-500">
+              <span class="font-mono text-slate-400 w-6">#{{ player.number }}</span>
+              <span class="font-bold text-white">{{ player.name }}</span>
+              <span class="text-xs bg-slate-600 px-2 py-1 rounded ml-auto text-slate-300">{{ player.position }}</span>
+            </label>
+            <div v-if="awayTeamRoster.length === 0" class="text-slate-500 italic p-4 text-center border border-dashed border-slate-700 rounded">
+              No players found for this team. Add players in the Teams menu first!
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="text-center w-1/3 mt-6">
-        <h3 class="text-2xl font-bold text-white mb-4">
-          {{ getTeamName(activeMatch.homeTeamId) }}
-        </h3>
-        <button
-          @click="registerGoal(activeMatch.homeTeamId)"
-          :disabled="liveMatchStore.matchPhase === 'HT' || liveMatchStore.matchPhase === 'FT'"
-          class="px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-full font-bold transition"
+      <!-- Start Match Button -->
+      <div class="mt-8 flex flex-col items-center gap-2">
+        <button 
+          @click="startMatch" 
+          class="px-8 py-3 bg-green-600 hover:bg-green-500 text-white rounded-full font-bold text-lg transition shadow-lg shadow-green-500/30"
         >
-          + Goal
+          Start Match
         </button>
-      </div>
-      <div class="text-center w-1/3 mt-6">
-        <div class="text-5xl font-black text-white tracking-widest mb-2">
-          {{ activeMatch.homeScore }} - {{ activeMatch.awayScore }}
-        </div>
-        <div class="text-sm text-slate-400 mt-2">
-          Events Logged: {{ liveMatchStore.events.length }}
-        </div>
-      </div>
-      <div class="text-center w-1/3 mt-6">
-        <h3 class="text-2xl font-bold text-white mb-4">
-          {{ getTeamName(activeMatch.awayTeamId) }}
-        </h3>
-        <button
-          @click="registerGoal(activeMatch.awayTeamId)"
-          :disabled="liveMatchStore.matchPhase === 'HT' || liveMatchStore.matchPhase === 'FT'"
-          class="px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-full font-bold transition"
-        >
-          + Goal
-        </button>
+        <span v-if="!isLineupReady" class="text-amber-500 text-sm font-semibold">
+          Warning: You have not selected exactly 11 players for both teams!
+        </span>
       </div>
     </div>
 
-    <div class="flex justify-center gap-6 pt-4">
-      <template v-if="liveMatchStore.matchPhase !== 'FT'">
-        <button
-          @click="liveMatchStore.concludeMatch()"
-          class="px-8 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded shadow-lg transition"
-        >
-          Conclude Match
-        </button>
-        <button
-          @click="handleCancelMatch"
-          class="px-8 py-2 border border-slate-600 text-slate-400 hover:bg-slate-700 hover:text-white rounded transition"
-        >
-          Cancel Match
-        </button>
-      </template>
-      <template v-else>
-        <button
-          @click="handleBack"
-          class="px-8 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded shadow-lg transition"
-        >
-          Close Match Controller
-        </button>
-      </template>
+    <!-- LIVE SCOREBOARD -->
+    <div v-else>
+      <div class="flex justify-between items-center bg-slate-900 p-8 rounded-lg border border-slate-700 relative overflow-hidden">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 bg-slate-800 px-6 py-2 rounded-b-lg border-b border-x border-slate-700 shadow-md flex items-center gap-3">
+          <span v-if="liveMatchStore.matchPhase === 'HT'" class="text-amber-400 font-black tracking-widest uppercase">Half Time</span>
+          <span v-else-if="liveMatchStore.matchPhase === 'FT'" class="text-slate-400 font-black tracking-widest uppercase">Full Time</span>
+          <span v-else class="text-emerald-400 font-bold text-xl animate-pulse">{{ liveMatchStore.currentMinute }}'</span>
+        </div>
+
+        <div class="text-center w-1/3 mt-6">
+          <h3 class="text-2xl font-bold text-white mb-4">{{ getTeamName(activeMatch.homeTeamId) }}</h3>
+          <button
+            @click="registerGoal(activeMatch.homeTeamId)"
+            :disabled="liveMatchStore.matchPhase === 'HT' || liveMatchStore.matchPhase === 'FT'"
+            class="px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-full font-bold transition"
+          >
+            + Goal
+          </button>
+        </div>
+        <div class="text-center w-1/3 mt-6">
+          <div class="text-5xl font-black text-white tracking-widest mb-2">
+            {{ activeMatch.homeScore }} - {{ activeMatch.awayScore }}
+          </div>
+          <div class="text-sm text-slate-400 mt-2">
+            Events Logged: {{ liveMatchStore.events.length }}
+          </div>
+        </div>
+        <div class="text-center w-1/3 mt-6">
+          <h3 class="text-2xl font-bold text-white mb-4">{{ getTeamName(activeMatch.awayTeamId) }}</h3>
+          <button
+            @click="registerGoal(activeMatch.awayTeamId)"
+            :disabled="liveMatchStore.matchPhase === 'HT' || liveMatchStore.matchPhase === 'FT'"
+            class="px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-full font-bold transition"
+          >
+            + Goal
+          </button>
+        </div>
+      </div>
+
+      <div class="flex justify-center gap-6 pt-4">
+        <template v-if="liveMatchStore.matchPhase !== 'FT'">
+          <button @click="liveMatchStore.concludeMatch()" class="px-8 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded shadow-lg transition">
+            Conclude Match
+          </button>
+          <button @click="handleCancelMatch" class="px-8 py-2 border border-slate-600 text-slate-400 hover:bg-slate-700 hover:text-white rounded transition">
+            Cancel Match
+          </button>
+        </template>
+        <template v-else>
+          <button @click="handleBack" class="px-8 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded shadow-lg transition">
+            Close Match Controller
+          </button>
+        </template>
+      </div>
     </div>
+
   </div>
-  <div v-else class="text-center py-12 text-slate-400">
-    <p>No active match selected. Please select a match to manage.</p>
+  
+ <div v-else class="text-center py-12 text-slate-400">
+    <p class="mb-4">No active match selected, or the loaded match was deleted.</p>
+    
+    <button 
+      v-if="liveMatchStore.activeMatchId" 
+      @click="liveMatchStore.clearMatch()"
+      class="px-6 py-2 bg-red-600 hover:bg-red-500 text-white rounded-full font-bold shadow-lg transition"
+    >
+      Force Clear Stuck Match
+    </button>
   </div>
 </template>
