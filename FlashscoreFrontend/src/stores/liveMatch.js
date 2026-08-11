@@ -16,7 +16,6 @@ export const useLiveMatchStore = defineStore('liveMatch', () => {
     const fixtureStore = useFixtureStore()
     const match = fixtureStore.getMatchById(matchId)
 
-    // Only bail out if the match is already running live (not just pre-selected)
     if (match && match.status === MATCH_STATUS.LIVE && activeMatchId.value === matchId) return
 
     if (timer) clearInterval(timer)
@@ -30,7 +29,6 @@ export const useLiveMatchStore = defineStore('liveMatch', () => {
       currentMinute.value = 0
       matchPhase.value = MATCH_PHASES.FIRST_HALF
 
-      // Strip navigation properties before sending to backend to avoid EF Core conflicts
       const { homeTeam, awayTeam, ...matchData } = match
       await fixtureStore.updateFixture(matchId, {
         ...matchData,
@@ -97,6 +95,18 @@ export const useLiveMatchStore = defineStore('liveMatch', () => {
     events.value.push({ type: EVENT_TYPES.GOAL, teamId: teamId, minute: currentMinute.value })
   }
 
+  const addCard = async (teamId, playerId, type) => {
+    const fixtureStore = useFixtureStore()
+    events.value.push({ type, teamId, playerId, minute: currentMinute.value })
+    const match = fixtureStore.getMatchById(activeMatchId.value)
+    if (!match) return
+    const { homeTeam, awayTeam, ...matchData } = match
+    await fixtureStore.updateFixture(activeMatchId.value, {
+      ...matchData,
+      events: events.value,
+    })
+  }
+
   const cancelMatch = async () => {
     const fixtureStore = useFixtureStore()
     clearInterval(timer)
@@ -133,6 +143,7 @@ export const useLiveMatchStore = defineStore('liveMatch', () => {
     startMatch,
     concludeMatch,
     addGoal,
+    addCard,
     cancelMatch,
     clearMatch,
   }

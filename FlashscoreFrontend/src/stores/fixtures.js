@@ -15,7 +15,6 @@ export const useFixtureStore = defineStore('fixtures', () => {
     }
   }
 
-  // Grouping matches by matchday for the UI
   const matchesByMatchday = computed(() => {
     const groups = {}
     fixtures.value.forEach((match) => {

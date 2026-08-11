@@ -414,3 +414,4 @@ C:\Users\valib\Desktop\COT-Flashscore\FlashscoreBackend\obj\Debug\net10.0\refint
 C:\Users\valib\Desktop\COT-Flashscore\FlashscoreBackend\obj\Debug\net10.0\FlashscoreBackend.pdb
 C:\Users\valib\Desktop\COT-Flashscore\FlashscoreBackend\obj\Debug\net10.0\FlashscoreBackend.genruntimeconfig.cache
 C:\Users\valib\Desktop\COT-Flashscore\FlashscoreBackend\obj\Debug\net10.0\ref\FlashscoreBackend.dll
+C:\Users\valib\Desktop\COT-Flashscore\FlashscoreBackend\obj\Debug\net10.0\FlashscoreBackend.sourcelink.json

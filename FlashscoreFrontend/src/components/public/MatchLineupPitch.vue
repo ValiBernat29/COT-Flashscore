@@ -53,7 +53,6 @@ const getLastName = (name) => name?.split(' ').pop() ?? name
 <template>
   <div class="lineup-pitch-wrap">
 
-    <!-- Formation Header Bar -->
     <div class="formation-header">
       <div class="formation-team home-side">
         <span class="formation-label">{{ homeFormationStr || '—' }}</span>
@@ -66,45 +65,33 @@ const getLastName = (name) => name?.split(' ').pop() ?? name
       </div>
     </div>
 
-    <!-- The Pitch -->
     <div class="pitch-outer">
       <div class="pitch">
 
         <!-- Pitch Markings -->
         <div class="pitch-markings">
-          <!-- Grass stripes -->
           <div class="grass-stripe" v-for="i in 7" :key="i" :style="{ left: ((i-1)/7 * 100) + '%', width: (1/7 * 100) + '%', opacity: i % 2 === 0 ? 0.06 : 0 }"></div>
 
-          <!-- Center line -->
           <div class="center-line"></div>
-          <!-- Center circle -->
           <div class="center-circle"></div>
           <div class="center-dot"></div>
 
-          <!-- Home penalty box -->
           <div class="penalty-box left-box"></div>
           <div class="six-yard left-six"></div>
-          <!-- Penalty spot home -->
           <div class="penalty-spot left-spot"></div>
-          <!-- Penalty arc home -->
           <div class="penalty-arc left-arc"></div>
 
-          <!-- Away penalty box -->
           <div class="penalty-box right-box"></div>
           <div class="six-yard right-six"></div>
-          <!-- Penalty spot away -->
           <div class="penalty-spot right-spot"></div>
-          <!-- Penalty arc away -->
           <div class="penalty-arc right-arc"></div>
 
-          <!-- Corner arcs -->
           <div class="corner-arc top-left-arc"></div>
           <div class="corner-arc top-right-arc"></div>
           <div class="corner-arc bottom-left-arc"></div>
           <div class="corner-arc bottom-right-arc"></div>
         </div>
 
-        <!-- HOME TEAM HALF -->
         <div class="team-half home-half">
           <div
             v-for="(group, gi) in homeFormation"
@@ -118,7 +105,6 @@ const getLastName = (name) => name?.split(' ').pop() ?? name
             >
               <div class="player-token home-token">
                 <span class="jersey-number">{{ player.number }}</span>
-                <!-- Tooltip -->
                 <div class="player-tooltip">
                   <span class="tooltip-number">#{{ player.number }}</span>
                   <span class="tooltip-name">{{ player.name }}</span>
@@ -130,7 +116,6 @@ const getLastName = (name) => name?.split(' ').pop() ?? name
           </div>
         </div>
 
-        <!-- AWAY TEAM HALF (flex-row-reverse puts GK on far right, FWD near center) -->
         <div class="team-half away-half">
           <div
             v-for="(group, gi) in awayFormation"
@@ -158,7 +143,6 @@ const getLastName = (name) => name?.split(' ').pop() ?? name
       </div>
     </div>
 
-    <!-- No lineup fallback -->
     <div v-if="!hasLineup" class="no-lineup-msg">
       <span>Lineup not yet announced</span>
     </div>
@@ -167,7 +151,7 @@ const getLastName = (name) => name?.split(' ').pop() ?? name
 </template>
 
 <style scoped>
-/* ─── Wrapper ───────────────────────────────────────────────── */
+/*  Wrapper  */
 .lineup-pitch-wrap {
   background: #0f1923;
   border-radius: 12px;
@@ -176,7 +160,7 @@ const getLastName = (name) => name?.split(' ').pop() ?? name
   user-select: none;
 }
 
-/* ─── Formation header ──────────────────────────────────────── */
+/*  Formation header  */
 .formation-header {
   display: flex;
   align-items: center;
@@ -220,13 +204,13 @@ const getLastName = (name) => name?.split(' ').pop() ?? name
   text-transform: uppercase;
 }
 
-/* ─── Pitch outer shell ─────────────────────────────────────── */
+/*  Pitch outer shell  */
 .pitch-outer {
   padding: 12px;
   overflow-x: auto;
 }
 
-/* ─── Pitch ─────────────────────────────────────────────────── */
+/*  Pitch  */
 .pitch {
   position: relative;
   min-width: 640px;
@@ -239,7 +223,7 @@ const getLastName = (name) => name?.split(' ').pop() ?? name
   box-shadow: inset 0 0 60px rgba(0,0,0,0.35);
 }
 
-/* ─── Pitch Markings ────────────────────────────────────────── */
+/*  Pitch Markings  */
 .pitch-markings {
   position: absolute;
   inset: 0;
@@ -338,7 +322,7 @@ const getLastName = (name) => name?.split(' ').pop() ?? name
 .bottom-left-arc  { bottom: -9px; left: -9px; }
 .bottom-right-arc { bottom: -9px; right: -9px; }
 
-/* ─── Team halves ────────────────────────────────────────────── */
+/*  Team halves  */
 .team-half {
   position: relative;
   width: 50%;
@@ -368,7 +352,7 @@ const getLastName = (name) => name?.split(' ').pop() ?? name
   gap: 4px;
 }
 
-/* ─── Player token ───────────────────────────────────────────── */
+/*  Player token  */
 .player-token-wrap {
   display: flex;
   flex-direction: column;
@@ -428,7 +412,7 @@ const getLastName = (name) => name?.split(' ').pop() ?? name
   letter-spacing: 0.3px;
 }
 
-/* ─── Tooltip ────────────────────────────────────────────────── */
+/*  Tooltip  */
 .player-tooltip {
   display: none;
   position: absolute;
@@ -476,7 +460,7 @@ const getLastName = (name) => name?.split(' ').pop() ?? name
   letter-spacing: 0.5px;
 }
 
-/* ─── No lineup fallback ─────────────────────────────────────── */
+/*  No lineup fallback  */
 .no-lineup-msg {
   text-align: center;
   padding: 16px;

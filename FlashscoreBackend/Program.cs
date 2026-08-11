@@ -3,11 +3,9 @@ using FlashscoreBackend.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=flashscore.db"));
 
-// Allow Vue frontend to communicate with this API
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("VueCorsPolicy", builder =>

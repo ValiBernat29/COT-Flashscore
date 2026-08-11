@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useTeamStore } from '../../stores/teams'
 import { useFixtureStore } from '../../stores/fixtures'
 import { useLiveMatchStore } from '../../stores/liveMatch'
-import { MATCH_STATUS } from '../../utils/constants' 
+import { MATCH_STATUS, EVENT_TYPES } from '../../utils/constants' 
 import { usePlayerStore } from '../../stores/players' 
 
 const emit = defineEmits(['close'])
@@ -14,6 +14,10 @@ const playerStore = usePlayerStore()
 
 const selectedHomeLineup = ref([])
 const selectedAwayLineup = ref([])
+
+const homeCardPlayerId = ref('')
+const awayCardPlayerId = ref('')
+const cardError = ref('')
 
 const activeMatch = computed(() => {
   if (!liveMatchStore.activeMatchId) return null
@@ -85,12 +89,57 @@ const registerGoal = async (teamId) => {
     events: liveMatchStore.events,
   })
 }
+
+const isSentOff = (playerId) => {
+  const playerEvents = liveMatchStore.events.filter(
+    (e) => String(e.playerId) === String(playerId)
+  )
+  const yellowCount = playerEvents.filter((e) => e.type === EVENT_TYPES.YELLOW_CARD).length
+  const hasRed = playerEvents.some((e) => e.type === EVENT_TYPES.RED_CARD)
+  return hasRed || yellowCount >= 2
+}
+
+const registerCard = async (teamId, playerId, type) => {
+  if (liveMatchStore.matchPhase === 'HT' || liveMatchStore.matchPhase === 'FT') return
+  if (!playerId) return
+
+  const playerEvents = liveMatchStore.events.filter(
+    (e) => String(e.playerId) === String(playerId)
+  )
+  const yellowCount = playerEvents.filter((e) => e.type === EVENT_TYPES.YELLOW_CARD).length
+  const hasRed = playerEvents.some((e) => e.type === EVENT_TYPES.RED_CARD)
+
+  // Already sent off — nothing more can be issued
+  if (hasRed || yellowCount >= 2) {
+    cardError.value = 'This player has already been sent off.'
+    setTimeout(() => { cardError.value = '' }, 2500)
+    return
+  }
+
+  await liveMatchStore.addCard(teamId, playerId, type)
+
+  // 2nd yellow automatically triggers a red card
+  if (type === EVENT_TYPES.YELLOW_CARD && yellowCount === 1) {
+    await liveMatchStore.addCard(teamId, playerId, EVENT_TYPES.RED_CARD)
+  }
+}
+
+const homeLineupPlayers = computed(() =>
+  activeMatch.value
+    ? homeTeamRoster.value.filter(p => activeMatch.value.homeLineup?.includes(p.id))
+    : []
+)
+
+const awayLineupPlayers = computed(() =>
+  activeMatch.value
+    ? awayTeamRoster.value.filter(p => activeMatch.value.awayLineup?.includes(p.id))
+    : []
+)
 </script>
 
 <template>
   <div v-if="activeMatch" class="space-y-6">
     
-    <!-- TOP BAR (Always visible) -->
     <div class="flex justify-between items-center pb-2 border-b border-slate-700">
       <button
         @click="handleBack"
@@ -109,12 +158,10 @@ const registerGoal = async (teamId) => {
       </span>
     </div>
 
-    <!-- PRE-MATCH LINEUP BUILDER -->
     <div v-if="activeMatch.status === MATCH_STATUS.SCHEDULED" class="bg-slate-800 p-6 rounded-lg mt-6">
       <h2 class="text-2xl font-bold text-white mb-4">Set Starting Lineups</h2>
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <!-- Home Team Selection -->
         <div>
           <h3 class="text-xl text-blue-400 font-bold mb-3">{{ getTeamName(activeMatch.homeTeamId) }} ({{ selectedHomeLineup.length }}/11)</h3>
           <div class="space-y-2 max-h-96 overflow-y-auto pr-2">
@@ -135,7 +182,6 @@ const registerGoal = async (teamId) => {
           </div>
         </div>
 
-        <!-- Away Team Selection -->
         <div>
           <h3 class="text-xl text-red-400 font-bold mb-3">{{ getTeamName(activeMatch.awayTeamId) }} ({{ selectedAwayLineup.length }}/11)</h3>
           <div class="space-y-2 max-h-96 overflow-y-auto pr-2">
@@ -157,7 +203,6 @@ const registerGoal = async (teamId) => {
         </div>
       </div>
 
-      <!-- Start Match Button -->
       <div class="mt-8 flex flex-col items-center gap-2">
         <button 
           @click="startMatch" 
@@ -171,7 +216,6 @@ const registerGoal = async (teamId) => {
       </div>
     </div>
 
-    <!-- LIVE SCOREBOARD -->
     <div v-else>
       <div class="flex justify-between items-center bg-slate-900 p-8 rounded-lg border border-slate-700 relative overflow-hidden">
         <div class="absolute top-0 left-1/2 -translate-x-1/2 bg-slate-800 px-6 py-2 rounded-b-lg border-b border-x border-slate-700 shadow-md flex items-center gap-3">
@@ -189,6 +233,31 @@ const registerGoal = async (teamId) => {
           >
             + Goal
           </button>
+          <div class="mt-3 flex flex-col gap-2 items-center">
+            <select
+              v-model="homeCardPlayerId"
+              :disabled="liveMatchStore.matchPhase === 'HT' || liveMatchStore.matchPhase === 'FT'"
+              class="w-full max-w-[180px] bg-slate-800 border border-slate-600 text-slate-200 text-sm rounded px-2 py-1 disabled:opacity-40"
+            >
+              <option disabled value="">Select player…</option>
+              <option v-for="p in homeLineupPlayers" :key="p.id" :value="p.id">
+                {{ isSentOff(p.id) ? '🚨 ' : '' }}#{{ p.number }} {{ p.name }}{{ isSentOff(p.id) ? ' (off)' : '' }}
+              </option>
+            </select>
+            <p v-if="cardError" class="text-xs text-red-400 font-semibold">{{ cardError }}</p>
+            <div class="flex gap-2">
+              <button
+                @click="registerCard(activeMatch.homeTeamId, homeCardPlayerId, EVENT_TYPES.YELLOW_CARD)"
+                :disabled="!homeCardPlayerId || liveMatchStore.matchPhase === 'HT' || liveMatchStore.matchPhase === 'FT'"
+                class="px-3 py-1 bg-yellow-500 hover:bg-yellow-400 disabled:bg-slate-700 disabled:text-slate-500 text-slate-900 font-bold text-sm rounded-full transition"
+              >🟨 Yellow</button>
+              <button
+                @click="registerCard(activeMatch.homeTeamId, homeCardPlayerId, EVENT_TYPES.RED_CARD)"
+                :disabled="!homeCardPlayerId || liveMatchStore.matchPhase === 'HT' || liveMatchStore.matchPhase === 'FT'"
+                class="px-3 py-1 bg-red-600 hover:bg-red-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold text-sm rounded-full transition"
+              >🟥 Red</button>
+            </div>
+          </div>
         </div>
         <div class="text-center w-1/3 mt-6">
           <div class="text-5xl font-black text-white tracking-widest mb-2">
@@ -207,6 +276,31 @@ const registerGoal = async (teamId) => {
           >
             + Goal
           </button>
+          <div class="mt-3 flex flex-col gap-2 items-center">
+            <select
+              v-model="awayCardPlayerId"
+              :disabled="liveMatchStore.matchPhase === 'HT' || liveMatchStore.matchPhase === 'FT'"
+              class="w-full max-w-[180px] bg-slate-800 border border-slate-600 text-slate-200 text-sm rounded px-2 py-1 disabled:opacity-40"
+            >
+              <option disabled value="">Select player…</option>
+              <option v-for="p in awayLineupPlayers" :key="p.id" :value="p.id">
+                {{ isSentOff(p.id) ? '🚨 ' : '' }}#{{ p.number }} {{ p.name }}{{ isSentOff(p.id) ? ' (off)' : '' }}
+              </option>
+            </select>
+            <p v-if="cardError" class="text-xs text-red-400 font-semibold">{{ cardError }}</p>
+            <div class="flex gap-2">
+              <button
+                @click="registerCard(activeMatch.awayTeamId, awayCardPlayerId, EVENT_TYPES.YELLOW_CARD)"
+                :disabled="!awayCardPlayerId || liveMatchStore.matchPhase === 'HT' || liveMatchStore.matchPhase === 'FT'"
+                class="px-3 py-1 bg-yellow-500 hover:bg-yellow-400 disabled:bg-slate-700 disabled:text-slate-500 text-slate-900 font-bold text-sm rounded-full transition"
+              >🟨 Yellow</button>
+              <button
+                @click="registerCard(activeMatch.awayTeamId, awayCardPlayerId, EVENT_TYPES.RED_CARD)"
+                :disabled="!awayCardPlayerId || liveMatchStore.matchPhase === 'HT' || liveMatchStore.matchPhase === 'FT'"
+                class="px-3 py-1 bg-red-600 hover:bg-red-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold text-sm rounded-full transition"
+              >🟥 Red</button>
+            </div>
+          </div>
         </div>
       </div>
 

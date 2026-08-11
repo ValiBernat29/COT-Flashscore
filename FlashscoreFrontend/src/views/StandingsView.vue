@@ -84,7 +84,6 @@ const standings = computed(() => {
           </tr>
         </thead>
         <tbody>
-          <!-- Changed sortedTeams to standings -->
           <tr
             v-for="(team, index) in standings"
             :key="team.id"
@@ -96,7 +95,6 @@ const standings = computed(() => {
             <td class="p-3 text-center">{{ team.won }}</td>
             <td class="p-3 text-center">{{ team.drawn }}</td>
             <td class="p-3 text-center">{{ team.lost }}</td>
-            <!-- Changed goalsFor/goalsAgainst to gf/ga to match the setup script -->
             <td class="p-3 text-center">{{ team.gf }}</td>
             <td class="p-3 text-center">{{ team.ga }}</td>
             <td class="p-3 text-center font-bold text-blue-600 text-lg">{{ team.points }}</td>

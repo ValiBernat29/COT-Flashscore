@@ -49,7 +49,6 @@ const handleAddPlayer = async () => {
   <div class="bg-white rounded-lg shadow p-6 max-w-4xl mx-auto">
     <h2 class="text-2xl font-bold mb-6 text-gray-800">Squad Management</h2>
 
-    <!-- Team Selector -->
     <div class="mb-8">
       <label class="block text-sm font-medium text-gray-700 mb-2">Select a Team</label>
       <select
@@ -63,11 +62,9 @@ const handleAddPlayer = async () => {
       </select>
     </div>
 
-    <!-- Roster Management (Only visible if a team is selected) -->
     <div v-if="selectedTeamId">
       <hr class="my-6 border-gray-200" />
 
-      <!-- Add Player Form -->
       <form @submit.prevent="handleAddPlayer" class="flex gap-4 mb-8 items-end">
         <div class="flex-1">
           <label class="block text-sm font-medium text-gray-700 mb-1">Player Name</label>
@@ -110,7 +107,6 @@ const handleAddPlayer = async () => {
         </button>
       </form>
 
-      <!-- Squad List -->
       <div
         v-if="playerStore.players?.length > 0"
         class="overflow-hidden border border-gray-200 rounded-lg"

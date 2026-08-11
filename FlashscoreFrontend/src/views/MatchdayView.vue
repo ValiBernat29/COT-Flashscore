@@ -19,14 +19,12 @@ const getTeamName = (id) => teamStore.teams.find((t) => String(t.id) === String(
     </div>
 
     <div v-for="group in fixtureStore.matchesByMatchday" :key="group.matchday" class="space-y-3">
-      <!-- Matchday header -->
       <div class="border-b-2 border-blue-600 pb-2 mb-4">
         <h3 class="text-xl font-bold text-gray-700 uppercase tracking-wide">
           Matchday {{ group.matchday }}
         </h3>
       </div>
 
-      <!-- Match cards -->
       <RouterLink
         v-for="match in group.matches"
         :key="match.id"
@@ -38,7 +36,6 @@ const getTeamName = (id) => teamStore.teams.find((t) => String(t.id) === String(
           'border-gray-300': match.status === 'Scheduled',
         }"
       >
-        <!-- Status row -->
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-2">
             <span
@@ -54,7 +51,6 @@ const getTeamName = (id) => teamStore.teams.find((t) => String(t.id) === String(
             >FT</span>
             <span v-else class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Scheduled</span>
 
-            <!-- Live minute (only for the currently managed match) -->
             <span
               v-if="match.status === 'Live' && String(liveMatchStore.activeMatchId) === String(match.id)"
               class="text-xs font-bold px-2 py-0.5 rounded bg-gray-100"
@@ -64,7 +60,6 @@ const getTeamName = (id) => teamStore.teams.find((t) => String(t.id) === String(
             </span>
           </div>
 
-          <!-- "View details" arrow hint -->
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="w-4 h-4 text-gray-300 group-hover:text-blue-500 transition-colors"
@@ -75,7 +70,6 @@ const getTeamName = (id) => teamStore.teams.find((t) => String(t.id) === String(
           </svg>
         </div>
 
-        <!-- Score row -->
         <div class="flex items-center justify-between text-lg font-bold">
           <div class="w-2/5 text-right truncate">{{ getTeamName(match.homeTeamId) }}</div>
           <div

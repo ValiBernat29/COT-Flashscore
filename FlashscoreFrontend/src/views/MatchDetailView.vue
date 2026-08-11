@@ -21,7 +21,11 @@ const match = computed(
 const getTeamName = (id) =>
   teamStore.teams.find((t) => String(t.id) === String(id))?.name ?? '—'
 
-// ── Rosters ──────────────────────────────────────────────────
+const getPlayerName = (playerId) => {
+  const all = [...homeRoster.value, ...awayRoster.value]
+  return all.find((p) => String(p.id) === String(playerId))?.name ?? `#${playerId}`
+}
+
 const homeRoster = ref([])
 const awayRoster = ref([])
 const loading = ref(true)
@@ -42,7 +46,6 @@ onMounted(async () => {
   }
 })
 
-// ── Status helpers ────────────────────────────────────────────
 const isLive = computed(() => match.value?.status === 'Live')
 const isFinished = computed(() => match.value?.status === 'Finished')
 
@@ -54,7 +57,6 @@ const liveMinute = computed(() =>
   liveMatchStore.matchPhase === 'HT' ? 'HT' : liveMatchStore.currentMinute + "'"
 )
 
-// Events: live store if active, else stored events on the fixture
 const events = computed(() => {
   if (isActiveMatch.value) return liveMatchStore.events
   return match.value?.events ?? []
@@ -68,7 +70,6 @@ const hasLineup = computed(
 <template>
   <div class="space-y-6">
 
-    <!-- Back link -->
     <RouterLink
       to="/matches"
       class="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition group"
@@ -79,14 +80,12 @@ const hasLineup = computed(
       Back to Matches
     </RouterLink>
 
-    <!-- Not found -->
     <div v-if="!match" class="text-center py-20 text-gray-400 italic">
       Match not found.
     </div>
 
     <template v-else>
 
-      <!-- ── Match Header Card ── -->
       <div
         class="bg-white rounded-xl shadow-md overflow-hidden border-t-4"
         :class="{
@@ -95,7 +94,6 @@ const hasLineup = computed(
           'border-gray-300': !isLive && !isFinished,
         }"
       >
-        <!-- Status strip -->
         <div
           class="flex items-center justify-center gap-3 py-2 text-xs font-bold uppercase tracking-widest"
           :class="{
@@ -111,7 +109,6 @@ const hasLineup = computed(
           <span v-else-if="isFinished">Full Time</span>
           <span v-else>Scheduled</span>
 
-          <!-- Live minute indicator -->
           <span
             v-if="isActiveMatch"
             class="bg-white/20 px-2 py-0.5 rounded-full text-white font-black"
@@ -120,9 +117,7 @@ const hasLineup = computed(
           </span>
         </div>
 
-        <!-- Teams + Score -->
         <div class="grid grid-cols-3 items-center gap-4 px-8 py-8">
-          <!-- Home -->
           <div class="text-right">
             <p class="text-2xl font-black text-gray-800 leading-tight">
               {{ getTeamName(match.homeTeamId) }}
@@ -130,7 +125,6 @@ const hasLineup = computed(
             <p class="text-xs text-gray-400 font-semibold mt-1 uppercase tracking-wide">Home</p>
           </div>
 
-          <!-- Score -->
           <div class="text-center">
             <div
               class="text-5xl font-black tracking-tight leading-none"
@@ -140,7 +134,6 @@ const hasLineup = computed(
             </div>
           </div>
 
-          <!-- Away -->
           <div class="text-left">
             <p class="text-2xl font-black text-gray-800 leading-tight">
               {{ getTeamName(match.awayTeamId) }}
@@ -150,7 +143,6 @@ const hasLineup = computed(
         </div>
       </div>
 
-      <!-- ── Lineup Pitch ── -->
       <div v-if="hasLineup">
         <h2 class="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -177,7 +169,6 @@ const hasLineup = computed(
         Lineup not yet announced
       </div>
 
-      <!-- ── Events ── -->
       <div class="bg-white rounded-xl shadow-md p-6">
         <h2 class="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -187,32 +178,47 @@ const hasLineup = computed(
           Match Events
         </h2>
 
-        <ul v-if="events.length > 0" class="space-y-2">
+        <div v-if="events.length > 0" class="grid grid-cols-[1fr_48px_1fr] gap-x-3 mb-2 px-1">
+          <span class="text-xs font-bold text-blue-500 uppercase tracking-wide">{{ getTeamName(match.homeTeamId) }}</span>
+          <span></span>
+          <span class="text-xs font-bold text-red-400 uppercase tracking-wide text-right">{{ getTeamName(match.awayTeamId) }}</span>
+        </div>
+
+        <ul v-if="events.length > 0" class="space-y-1">
           <li
             v-for="(event, i) in [...events].reverse()"
             :key="i"
-            class="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition"
+            class="grid grid-cols-[1fr_48px_1fr] items-center gap-x-3 py-1.5 px-1 rounded-lg hover:bg-gray-50 transition"
           >
-            <!-- Minute badge -->
-            <span class="w-12 text-center text-xs font-black text-blue-600 bg-blue-50 rounded-full py-1 shrink-0">
+            <div
+              v-if="String(event.teamId) === String(match.homeTeamId)"
+              class="flex items-center gap-1.5 justify-end text-right"
+            >
+              <span class="text-sm font-bold text-gray-900">
+                {{ event.type === 'Goal' ? getTeamName(event.teamId) : getPlayerName(event.playerId) }}
+              </span>
+              <span class="text-base shrink-0">
+                {{ event.type === 'Goal' ? '⚽' : event.type === 'Yellow Card' ? '🟨' : event.type === 'Red Card' ? '🟥' : '📋' }}
+              </span>
+            </div>
+            <div v-else></div>
+
+            <span class="text-center text-xs font-black text-blue-600 bg-blue-50 rounded-full py-1 w-full">
               {{ event.minute }}'
             </span>
-            <!-- Icon -->
-            <span class="text-lg">⚽</span>
-            <!-- Text -->
-            <span class="text-sm text-gray-700">
-              Goal —
-              <span class="font-bold text-gray-900">{{ getTeamName(event.teamId) }}</span>
-            </span>
-            <!-- Side indicator -->
-            <span
-              class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full"
-              :class="String(event.teamId) === String(match.homeTeamId)
-                ? 'bg-blue-100 text-blue-700'
-                : 'bg-red-100 text-red-700'"
+
+            <div
+              v-if="String(event.teamId) !== String(match.homeTeamId)"
+              class="flex items-center gap-1.5 justify-start"
             >
-              {{ String(event.teamId) === String(match.homeTeamId) ? 'HOME' : 'AWAY' }}
-            </span>
+              <span class="text-base shrink-0">
+                {{ event.type === 'Goal' ? '⚽' : event.type === 'Yellow Card' ? '🟨' : event.type === 'Red Card' ? '🟥' : '📋' }}
+              </span>
+              <span class="text-sm font-bold text-gray-900">
+                {{ event.type === 'Goal' ? getTeamName(event.teamId) : getPlayerName(event.playerId) }}
+              </span>
+            </div>
+            <div v-else></div>
           </li>
         </ul>
 
