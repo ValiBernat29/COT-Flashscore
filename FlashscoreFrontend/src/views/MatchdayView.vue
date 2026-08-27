@@ -9,6 +9,7 @@ const teamStore = useTeamStore()
 const liveMatchStore = useLiveMatchStore()
 
 const getTeamName = (id) => teamStore.teams.find((t) => String(t.id) === String(id))?.name
+const getTeamLogo = (id) => teamStore.teams.find((t) => String(t.id) === String(id))?.logoUrl || ''
 </script>
 
 <template>
@@ -71,14 +72,20 @@ const getTeamName = (id) => teamStore.teams.find((t) => String(t.id) === String(
         </div>
 
         <div class="flex items-center justify-between text-lg font-bold">
-          <div class="w-2/5 text-right truncate">{{ getTeamName(match.homeTeamId) }}</div>
+          <div class="w-2/5 text-right truncate flex items-center justify-end gap-2">
+            <span>{{ getTeamName(match.homeTeamId) }}</span>
+            <img v-if="getTeamLogo(match.homeTeamId)" :src="getTeamLogo(match.homeTeamId)" class="w-7 h-7 object-contain flex-shrink-0" />
+          </div>
           <div
             class="w-1/5 text-center py-1 rounded mx-3 text-xl font-black"
             :class="match.status === 'Finished' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'"
           >
             {{ match.homeScore }} – {{ match.awayScore }}
           </div>
-          <div class="w-2/5 text-left truncate">{{ getTeamName(match.awayTeamId) }}</div>
+          <div class="w-2/5 text-left truncate flex items-center gap-2">
+            <img v-if="getTeamLogo(match.awayTeamId)" :src="getTeamLogo(match.awayTeamId)" class="w-7 h-7 object-contain flex-shrink-0" />
+            <span>{{ getTeamName(match.awayTeamId) }}</span>
+          </div>
         </div>
       </RouterLink>
     </div>

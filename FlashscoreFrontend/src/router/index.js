@@ -10,6 +10,7 @@ const router = createRouter({
         { path: '', name: 'standings', component: () => import('../views/StandingsView.vue') },
         { path: 'matches', name: 'matches', component: () => import('../views/MatchdayView.vue') },
         { path: 'matches/:id', name: 'match-detail', component: () => import('../views/MatchDetailView.vue') },
+        { path: 'teams/:id', name: 'team-squad', component: () => import('../views/TeamSquadView.vue') },
       ],
     },
     {

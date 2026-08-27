@@ -55,7 +55,16 @@ const handleDeleteTeam = (id) => {
             :key="team.id"
             class="flex justify-between items-center bg-slate-700 p-3 rounded border border-slate-600"
           >
-            <span class="text-white font-medium">{{ team.name }}</span>
+            <div class="flex items-center gap-3">
+              <img
+                v-if="team.logoUrl"
+                :src="team.logoUrl"
+                :alt="team.name"
+                class="w-7 h-7 object-contain"
+              />
+              <span v-else class="text-xl">🛡️</span>
+              <span class="text-white font-medium">{{ team.name }}</span>
+            </div>
             <button
               @click="handleDeleteTeam(team.id)"
               class="text-red-400 hover:text-red-300 font-semibold text-sm"

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FlashscoreBackend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c2f0d4b5889b70d8ca472f80d66177f7976ff937")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cc7e014d8e656e7c5f34f4718ae09af65fbac716")]
 [assembly: System.Reflection.AssemblyProductAttribute("FlashscoreBackend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FlashscoreBackend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

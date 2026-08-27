@@ -19,6 +19,8 @@ onMounted(() => {
   }
 })
 
+const selectedTeam = () => teamStore.teams.find((t) => String(t.id) === String(selectedTeamId.value))
+
 // Watch for dropdown changes and fetch that specific team's players
 watch(selectedTeamId, (newId) => {
   if (newId) {
@@ -63,7 +65,20 @@ const handleAddPlayer = async () => {
     </div>
 
     <div v-if="selectedTeamId">
-      <hr class="my-6 border-gray-200" />
+      <!-- Team logo banner -->
+      <div class="flex items-center gap-4 py-4 mb-2">
+        <img
+          v-if="selectedTeam()?.logoUrl"
+          :src="selectedTeam()?.logoUrl"
+          :alt="selectedTeam()?.name"
+          class="w-16 h-16 object-contain"
+        />
+        <div>
+          <h3 class="text-xl font-black text-gray-900">{{ selectedTeam()?.name }}</h3>
+          <p class="text-sm text-gray-500">{{ playerStore.players?.length ?? 0 }} players in squad</p>
+        </div>
+      </div>
+      <hr class="my-4 border-gray-200" />
 
       <form @submit.prevent="handleAddPlayer" class="flex gap-4 mb-8 items-end">
         <div class="flex-1">
@@ -114,32 +129,38 @@ const handleAddPlayer = async () => {
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No.</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Position
-              </th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                Actions
-              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Photo</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No.</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             <tr v-for="player in playerStore.players" :key="player.id" class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+              <td class="px-4 py-3">
+                <img
+                  v-if="player.photoUrl"
+                  :src="player.photoUrl"
+                  :alt="player.name"
+                  class="w-10 h-10 rounded-full object-cover bg-gray-200"
+                />
+                <div v-else class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-500">
+                  {{ player.number }}
+                </div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
                 #{{ player.number }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 {{ player.name }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <span
-                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800"
-                >
+              <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                   {{ player.position }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <button
                   @click="playerStore.deletePlayer(player.id)"
                   class="text-red-600 hover:text-red-900 font-semibold transition"

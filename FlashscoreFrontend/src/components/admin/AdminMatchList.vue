@@ -18,6 +18,9 @@ const toggleEvents = (matchId) => {
 const getTeamName = (id) =>
   teamStore.teams.find((t) => String(t.id) === String(id))?.name || 'Deleted Team'
 
+const getTeamLogo = (id) =>
+  teamStore.teams.find((t) => String(t.id) === String(id))?.logoUrl || ''
+
 const handleStartMatch = async (matchId) => {
   if (liveMatchStore.activeMatchId) {
     alert('You must conclude or cancel the current running match first.')
@@ -52,10 +55,14 @@ const handleResumeMatch = async (matchId) => {
           class="bg-slate-700 p-4 rounded border border-slate-600 flex flex-col"
         >
           <div class="flex justify-between items-center">
-            <span class="text-white font-medium text-lg"
-              >{{ getTeamName(match.homeTeamId) }}
-              <span class="text-slate-400 mx-2">{{ match.homeScore }} - {{ match.awayScore }}</span>
-              {{ getTeamName(match.awayTeamId) }}</span
+            <span class="text-white font-medium text-lg flex items-center gap-2"
+              >
+              <img v-if="getTeamLogo(match.homeTeamId)" :src="getTeamLogo(match.homeTeamId)" class="w-6 h-6 object-contain" />
+              {{ getTeamName(match.homeTeamId) }}
+              <span class="text-slate-400 mx-1">{{ match.homeScore }} - {{ match.awayScore }}</span>
+              {{ getTeamName(match.awayTeamId) }}
+              <img v-if="getTeamLogo(match.awayTeamId)" :src="getTeamLogo(match.awayTeamId)" class="w-6 h-6 object-contain" />
+              </span
             >
 
             <div v-if="match.status === 'Finished'" class="flex flex-col items-end">

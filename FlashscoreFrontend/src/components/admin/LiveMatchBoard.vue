@@ -56,6 +56,9 @@ const startMatch = async () => {
 const getTeamName = (id) =>
   teamStore.teams.find((t) => String(t.id) === String(id))?.name || 'Deleted Team'
 
+const getTeamLogo = (id) =>
+  teamStore.teams.find((t) => String(t.id) === String(id))?.logoUrl || ''
+
 const handleCancelMatch = async () => {
   if (confirm('Are you sure you want to cancel? This resets the match to 0-0 and wipes events.')) {
     await liveMatchStore.cancelMatch()
@@ -163,7 +166,10 @@ const awayLineupPlayers = computed(() =>
       
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
-          <h3 class="text-xl text-blue-400 font-bold mb-3">{{ getTeamName(activeMatch.homeTeamId) }} ({{ selectedHomeLineup.length }}/11)</h3>
+          <h3 class="text-xl text-blue-400 font-bold mb-3">
+            <img v-if="getTeamLogo(activeMatch.homeTeamId)" :src="getTeamLogo(activeMatch.homeTeamId)" class="inline w-6 h-6 object-contain mr-2" />
+            {{ getTeamName(activeMatch.homeTeamId) }} ({{ selectedHomeLineup.length }}/11)
+          </h3>
           <div class="space-y-2 max-h-96 overflow-y-auto pr-2">
             <label 
               v-for="player in homeTeamRoster" 
@@ -172,9 +178,15 @@ const awayLineupPlayers = computed(() =>
               :class="{'bg-blue-900/30 border-blue-500': selectedHomeLineup.includes(player.id)}"
             >
               <input type="checkbox" :value="player.id" v-model="selectedHomeLineup" class="w-5 h-5 accent-blue-500">
-              <span class="font-mono text-slate-400 w-6">#{{ player.number }}</span>
-              <span class="font-bold text-white">{{ player.name }}</span>
-              <span class="text-xs bg-slate-600 px-2 py-1 rounded ml-auto text-slate-300">{{ player.position }}</span>
+              <img
+                v-if="player.photoUrl"
+                :src="player.photoUrl"
+                :alt="player.name"
+                class="w-8 h-8 rounded-full object-cover bg-slate-600 flex-shrink-0"
+              />
+              <div v-else class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center flex-shrink-0 text-xs text-slate-400">#{{ player.number }}</div>
+              <span class="font-bold text-white flex-1">{{ player.name }}</span>
+              <span class="text-xs bg-slate-600 px-2 py-1 rounded text-slate-300">{{ player.position }}</span>
             </label>
             <div v-if="homeTeamRoster.length === 0" class="text-slate-500 italic p-4 text-center border border-dashed border-slate-700 rounded">
               No players found for this team. Add players in the Teams menu first!
@@ -183,7 +195,10 @@ const awayLineupPlayers = computed(() =>
         </div>
 
         <div>
-          <h3 class="text-xl text-red-400 font-bold mb-3">{{ getTeamName(activeMatch.awayTeamId) }} ({{ selectedAwayLineup.length }}/11)</h3>
+          <h3 class="text-xl text-red-400 font-bold mb-3">
+            <img v-if="getTeamLogo(activeMatch.awayTeamId)" :src="getTeamLogo(activeMatch.awayTeamId)" class="inline w-6 h-6 object-contain mr-2" />
+            {{ getTeamName(activeMatch.awayTeamId) }} ({{ selectedAwayLineup.length }}/11)
+          </h3>
           <div class="space-y-2 max-h-96 overflow-y-auto pr-2">
             <label 
               v-for="player in awayTeamRoster" 
@@ -192,9 +207,15 @@ const awayLineupPlayers = computed(() =>
               :class="{'bg-red-900/30 border-red-500': selectedAwayLineup.includes(player.id)}"
             >
               <input type="checkbox" :value="player.id" v-model="selectedAwayLineup" class="w-5 h-5 accent-red-500">
-              <span class="font-mono text-slate-400 w-6">#{{ player.number }}</span>
-              <span class="font-bold text-white">{{ player.name }}</span>
-              <span class="text-xs bg-slate-600 px-2 py-1 rounded ml-auto text-slate-300">{{ player.position }}</span>
+              <img
+                v-if="player.photoUrl"
+                :src="player.photoUrl"
+                :alt="player.name"
+                class="w-8 h-8 rounded-full object-cover bg-slate-600 flex-shrink-0"
+              />
+              <div v-else class="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center flex-shrink-0 text-xs text-slate-400">#{{ player.number }}</div>
+              <span class="font-bold text-white flex-1">{{ player.name }}</span>
+              <span class="text-xs bg-slate-600 px-2 py-1 rounded text-slate-300">{{ player.position }}</span>
             </label>
             <div v-if="awayTeamRoster.length === 0" class="text-slate-500 italic p-4 text-center border border-dashed border-slate-700 rounded">
               No players found for this team. Add players in the Teams menu first!
@@ -225,7 +246,10 @@ const awayLineupPlayers = computed(() =>
         </div>
 
         <div class="text-center w-1/3 mt-6">
-          <h3 class="text-2xl font-bold text-white mb-4">{{ getTeamName(activeMatch.homeTeamId) }}</h3>
+          <div class="flex flex-col items-center gap-2 mb-4">
+            <img v-if="getTeamLogo(activeMatch.homeTeamId)" :src="getTeamLogo(activeMatch.homeTeamId)" class="w-12 h-12 object-contain" />
+            <h3 class="text-2xl font-bold text-white">{{ getTeamName(activeMatch.homeTeamId) }}</h3>
+          </div>
           <button
             @click="registerGoal(activeMatch.homeTeamId)"
             :disabled="liveMatchStore.matchPhase === 'HT' || liveMatchStore.matchPhase === 'FT'"
@@ -268,7 +292,10 @@ const awayLineupPlayers = computed(() =>
           </div>
         </div>
         <div class="text-center w-1/3 mt-6">
-          <h3 class="text-2xl font-bold text-white mb-4">{{ getTeamName(activeMatch.awayTeamId) }}</h3>
+          <div class="flex flex-col items-center gap-2 mb-4">
+            <img v-if="getTeamLogo(activeMatch.awayTeamId)" :src="getTeamLogo(activeMatch.awayTeamId)" class="w-12 h-12 object-contain" />
+            <h3 class="text-2xl font-bold text-white">{{ getTeamName(activeMatch.awayTeamId) }}</h3>
+          </div>
           <button
             @click="registerGoal(activeMatch.awayTeamId)"
             :disabled="liveMatchStore.matchPhase === 'HT' || liveMatchStore.matchPhase === 'FT'"

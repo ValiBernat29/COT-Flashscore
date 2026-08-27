@@ -1,10 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using FlashscoreBackend.Data;
+using FlashscoreBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=flashscore.db"));
+
+// API-Football HTTP client + service
+builder.Services.AddHttpClient<ApiFootballService>();
+builder.Services.AddScoped<ApiFootballService>();
 
 builder.Services.AddCors(options =>
 {
@@ -36,4 +41,4 @@ app.UseCors("VueCorsPolicy");
 app.UseAuthorization();
 app.MapControllers();
 
-app.Run();
+app.Run();

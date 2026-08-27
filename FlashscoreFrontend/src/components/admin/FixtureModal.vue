@@ -14,6 +14,9 @@ const newAwayTeam = ref('')
 const getTeamName = (id) =>
   teamStore.teams.find((t) => String(t.id) === String(id))?.name || 'Deleted Team'
 
+const getTeamLogo = (id) =>
+  teamStore.teams.find((t) => String(t.id) === String(id))?.logoUrl || ''
+
 const handleAddFixture = () => {
   if (!newHomeTeam.value || !newAwayTeam.value || newHomeTeam.value === newAwayTeam.value) {
     alert('Please select two distinct teams.')
@@ -45,38 +48,40 @@ const handleDeleteFixture = (id) => {
         </button>
       </div>
       <div class="p-6 space-y-6">
-        <form @submit.prevent="handleAddFixture" class="flex flex-col sm:flex-row gap-3">
-          <input
-            v-model="newMatchday"
-            type="number"
-            min="1"
-            placeholder="Day"
-            class="w-20 bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white"
-          />
-          <select
-            v-model="newHomeTeam"
-            class="flex-1 bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white"
-          >
-            <option disabled value="">Home Team...</option>
-            <option v-for="team in teamStore.teams" :key="team.id" :value="team.id">
-              {{ team.name }}
-            </option>
-          </select>
-          <span class="text-white self-center font-bold">VS</span>
-          <select
-            v-model="newAwayTeam"
-            class="flex-1 bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white"
-          >
-            <option disabled value="">Away Team...</option>
-            <option v-for="team in teamStore.teams" :key="team.id" :value="team.id">
-              {{ team.name }}
-            </option>
-          </select>
+        <form @submit.prevent="handleAddFixture" class="flex flex-col gap-3">
+          <div class="flex items-center gap-3">
+            <input
+              v-model="newMatchday"
+              type="number"
+              min="1"
+              placeholder="Day"
+              class="w-20 shrink-0 bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white"
+            />
+            <select
+              v-model="newHomeTeam"
+              class="flex-1 min-w-0 bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white"
+            >
+              <option disabled value="">Home Team...</option>
+              <option v-for="team in teamStore.teams" :key="team.id" :value="team.id">
+                {{ team.name }}
+              </option>
+            </select>
+            <span class="text-white font-bold shrink-0">VS</span>
+            <select
+              v-model="newAwayTeam"
+              class="flex-1 min-w-0 bg-slate-900 border border-slate-600 rounded px-4 py-2 text-white"
+            >
+              <option disabled value="">Away Team...</option>
+              <option v-for="team in teamStore.teams" :key="team.id" :value="team.id">
+                {{ team.name }}
+              </option>
+            </select>
+          </div>
           <button
             type="submit"
-            class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-bold"
+            class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-bold transition"
           >
-            Add
+            + Create Fixture
           </button>
         </form>
         <div class="max-h-60 overflow-y-auto space-y-4 pr-2">
@@ -92,9 +97,13 @@ const handleDeleteFixture = (id) => {
                 :key="match.id"
                 class="flex justify-between items-center bg-slate-700 p-3 rounded border border-slate-600"
               >
-                <span class="text-white font-medium"
-                  >{{ getTeamName(match.homeTeamId) }} vs {{ getTeamName(match.awayTeamId) }}</span
-                >
+                <div class="flex items-center gap-3">
+                  <img v-if="getTeamLogo(match.homeTeamId)" :src="getTeamLogo(match.homeTeamId)" class="w-5 h-5 object-contain" />
+                  <span class="text-white font-medium">{{ getTeamName(match.homeTeamId) }}</span>
+                  <span class="text-slate-400 font-bold text-xs">vs</span>
+                  <img v-if="getTeamLogo(match.awayTeamId)" :src="getTeamLogo(match.awayTeamId)" class="w-5 h-5 object-contain" />
+                  <span class="text-white font-medium">{{ getTeamName(match.awayTeamId) }}</span>
+                </div>
                 <button
                   @click="handleDeleteFixture(match.id)"
                   class="text-red-400 hover:text-red-300 font-semibold text-sm"

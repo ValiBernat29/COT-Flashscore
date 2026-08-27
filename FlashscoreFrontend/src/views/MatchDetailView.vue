@@ -21,6 +21,9 @@ const match = computed(
 const getTeamName = (id) =>
   teamStore.teams.find((t) => String(t.id) === String(id))?.name ?? '—'
 
+const getTeamLogo = (id) =>
+  teamStore.teams.find((t) => String(t.id) === String(id))?.logoUrl ?? ''
+
 const getPlayerName = (playerId) => {
   const all = [...homeRoster.value, ...awayRoster.value]
   return all.find((p) => String(p.id) === String(playerId))?.name ?? `#${playerId}`
@@ -118,12 +121,21 @@ const hasLineup = computed(
         </div>
 
         <div class="grid grid-cols-3 items-center gap-4 px-8 py-8">
-          <div class="text-right">
-            <p class="text-2xl font-black text-gray-800 leading-tight">
+          <RouterLink
+            :to="{ name: 'team-squad', params: { id: match.homeTeamId } }"
+            class="text-right flex flex-col items-end gap-2 group/team hover:opacity-80 transition-opacity"
+          >
+            <img
+              v-if="getTeamLogo(match.homeTeamId)"
+              :src="getTeamLogo(match.homeTeamId)"
+              :alt="getTeamName(match.homeTeamId)"
+              class="w-14 h-14 object-contain cursor-pointer hover:scale-110 transition-transform duration-200"
+            />
+            <p class="text-2xl font-black text-gray-800 leading-tight group-hover/team:text-blue-600 transition-colors">
               {{ getTeamName(match.homeTeamId) }}
             </p>
-            <p class="text-xs text-gray-400 font-semibold mt-1 uppercase tracking-wide">Home</p>
-          </div>
+            <p class="text-xs text-gray-400 font-semibold uppercase tracking-wide">Home</p>
+          </RouterLink>
 
           <div class="text-center">
             <div
@@ -134,12 +146,21 @@ const hasLineup = computed(
             </div>
           </div>
 
-          <div class="text-left">
-            <p class="text-2xl font-black text-gray-800 leading-tight">
+          <RouterLink
+            :to="{ name: 'team-squad', params: { id: match.awayTeamId } }"
+            class="text-left flex flex-col items-start gap-2 group/team hover:opacity-80 transition-opacity"
+          >
+            <img
+              v-if="getTeamLogo(match.awayTeamId)"
+              :src="getTeamLogo(match.awayTeamId)"
+              :alt="getTeamName(match.awayTeamId)"
+              class="w-14 h-14 object-contain cursor-pointer hover:scale-110 transition-transform duration-200"
+            />
+            <p class="text-2xl font-black text-gray-800 leading-tight group-hover/team:text-blue-600 transition-colors">
               {{ getTeamName(match.awayTeamId) }}
             </p>
-            <p class="text-xs text-gray-400 font-semibold mt-1 uppercase tracking-wide">Away</p>
-          </div>
+            <p class="text-xs text-gray-400 font-semibold uppercase tracking-wide">Away</p>
+          </RouterLink>
         </div>
       </div>
 
